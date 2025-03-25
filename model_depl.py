@@ -1,182 +1,414 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 11,
-   "id": "6b83e59d-8554-4aaf-9487-cbadb6fe7ddb",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import streamlit as st\n",
-    "import pickle\n",
-    "import pandas as pd\n",
-    "import numpy as np\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 13,
-   "id": "7820f7d3-4576-42cf-abb0-dbbf0d68d767",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# Load the saved model and scaler\n",
-    "with open('model.pkl', 'rb') as f:\n",
-    "    model = pickle.load(f)\n",
-    "\n",
-    "with open('scaler.pkl', 'rb') as f:\n",
-    "    scaler = pickle.load(f)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 15,
-   "id": "c1d69421-9034-4b4a-9aef-b02a7781faf7",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "2025-03-25 12:12:53.595 \n",
-      "  \u001b[33m\u001b[1mWarning:\u001b[0m to view this Streamlit app on a browser, run it with the following\n",
-      "  command:\n",
-      "\n",
-      "    streamlit run C:\\Users\\Jeet\\anaconda3\\Lib\\site-packages\\ipykernel_launcher.py [ARGUMENTS]\n"
-     ]
-    },
-    {
-     "data": {
-      "text/plain": [
-       "DeltaGenerator()"
-      ]
-     },
-     "execution_count": 15,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "# Set up the Streamlit app\n",
-    "st.title('Titanic Survival Prediction')"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 17,
-   "id": "3a62f2cc-f7b9-4f98-83a2-e57d3799b4e1",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "2025-03-25 12:13:13.420 Session state does not function when running a script without `streamlit run`\n"
-     ]
-    }
-   ],
-   "source": [
-    "\n",
-    "# Create input fields for user data\n",
-    "sex = st.selectbox('Sex', ['Male', 'Female'])\n",
-    "pclass = st.selectbox('Passenger Class', [1, 2, 3])\n",
-    "fare = st.number_input('Fare', min_value=0.0, max_value=500.0, value=32.2)\n",
-    "embarked = st.selectbox('Port of Embarkation', ['Queenstown', 'Southampton', 'Other'])\n",
-    "family_size = st.number_input('Family Size', min_value=0, max_value=10, value=0)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 19,
-   "id": "4cfeef10-7dce-48bb-bd28-5fecb6f153a5",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# Create a dataframe from user inputs\n",
-    "input_data = pd.DataFrame({\n",
-    "    'Sex': [1 if sex == 'Male' else 0],\n",
-    "    'Pclass': [pclass],\n",
-    "    'Fare': [fare],\n",
-    "    'Embarked_Q': [1 if embarked == 'Queenstown' else 0],\n",
-    "    'Embarked_S': [1 if embarked == 'Southampton' else 0],\n",
-    "    'FamilySize': [family_size]\n",
-    "})"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 21,
-   "id": "1b122c3b-ad7d-4164-b4d0-12199fca42c0",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# Scale the input data\n",
-    "input_scaled = scaler.transform(input_data)\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 23,
-   "id": "794a3519-d55e-4af5-860c-1b99232a83c6",
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "DeltaGenerator(_root_container=1, _parent=DeltaGenerator())"
-      ]
-     },
-     "execution_count": 23,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "# Make prediction\n",
-    "if st.button('Predict'):\n",
-    "    prediction = model.predict(input_scaled)\n",
-    "    probability = model.predict_proba(input_scaled)[0][1]\n",
-    "    \n",
-    "    st.subheader('Prediction Result')\n",
-    "    if prediction[0] == 1:\n",
-    "        st.write('The passenger would likely survive.')\n",
-    "    else:\n",
-    "        st.write('The passenger would likely not survive.')\n",
-    "    \n",
-    "    st.write(f'Survival probability: {probability:.2f}')\n",
-    "\n",
-    "st.sidebar.header('About')\n",
-    "st.sidebar.info('This app predicts the survival of Titanic passengers based on input features.')\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "56d2358f-bf3a-4b71-bac3-507450345a72",
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python [conda env:base] *",
-   "language": "python",
-   "name": "conda-base-py"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.12.3"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+#!/usr/bin/env python
+# coding: utf-8
+
+# ## 📊 Data Science Analysis of Titanic Dataset
+# 
+# ### 1️⃣ Introduction
+# - **Objective**: Analyze the Titanic dataset and build a predictive model for passenger survival.
+# - **Dataset**: Contains features like `PassengerId`, `Survived`, `Pclass`, `Name`, `Sex`, `Age`, `SibSp`, `Parch`, `Ticket`, `Fare`, `Cabin`, and `Embarked`.
+# 
+# ### 2️⃣ Exploratory Data Analysis (EDA)
+# #### 🔍 Dataset Overview
+# - Displayed dataset information using:
+#   - `train_df.info()` and `test_df.info()` to show column types and non-null counts.
+#   - `train_df.describe()` for summary statistics of numerical features.
+# - Visualized data distributions and relationships:
+#   - Histograms for numerical features like `Age` and `Fare`.
+#   - Bar plots for categorical features like `Sex` and `Pclass` vs. `Survived`.
+# - Correlation matrix heatmap to identify feature relationships.
+# 
+# ### 3️⃣ Data Preprocessing
+# #### 🧹 Handling Missing Values
+# - Filled missing `Age` values with median.
+# - Filled missing `Embarked` values with mode.
+# - Filled missing `Fare` values in test set with median.
+# - Dropped `Cabin` column due to high percentage of missing values.
+# 
+# #### 🔢 Feature Engineering
+# - Created `FamilySize` feature by combining `SibSp` and `Parch`.
+# - Encoded `Sex` as numeric (0 for male, 1 for female).
+# - One-hot encoded `Embarked` feature.
+# 
+# #### 📉 Feature Selection
+# - Dropped less relevant features like `Name`, and `Ticket`.
+# 
+# ### 4️⃣ Model Building
+# - Split data into features (X) and target (y) for training set.
+# - Scaled numerical features using `StandardScaler`.
+# - Built and trained a logistic regression model.
+# 
+# ### 5️⃣ Model Evaluation
+# - Calculated performance metrics on training set:
+#   - Accuracy
+#   - Precision
+#   - Recall
+#   - F1 Score
+#   - ROC AUC Score
+# - Visualized confusion matrix for model performance.
+# 
+# ### 6️⃣ Predictions and Submission
+# - Made predictions on the test set.
+# - Created a submission file with `PassengerId` and predicted `Survived` values.
+# 
+# ### 7️⃣ Visualization of Results
+# - Created bar plots and scatter plots to visualize predictions:
+#   - Bar chart showing count of survived vs. not survived predictions.
+#   - Scatter plot of `PassengerId` vs. predicted survival.
+# 
+# ### 🔚 Conclusion
+# - Logistic regression model achieved good performance in predicting survival.
+# - Key features influencing survival include `Sex`, `Pclass`, and `Fare`.
+# - The model can be further improved by trying other algorithms or ensemble methods.
+
+# In[2]:
+
+
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+
+
+# In[3]:
+
+
+#Load both datasets
+train_df = pd.read_csv('Titanic_train.csv')
+test_df = pd.read_csv('Titanic_test.csv')
+print("Step 1: Datasets loaded successfully")
+print(f"Train dataset shape: {train_df.shape}")
+print(f"Test dataset shape: {test_df.shape}")
+
+
+# In[4]:
+
+
+#Check for null values in both datasets
+print("\nStep 2: Checking for null values")
+print("Train dataset null values:")
+print(train_df.isnull().sum())
+print("\nTest dataset null values:")
+print(test_df.isnull().sum())
+
+
+# In[5]:
+
+
+# Step 3: Dataset information and summary statistics
+print("\nStep 3: Dataset information")
+print("Train dataset info:")
+train_df.info()
+print("\nTest dataset info:")
+test_df.info()
+
+
+# In[6]:
+
+
+print("\nSummary statistics for Train dataset:")
+print(train_df.describe())
+
+
+# In[7]:
+
+
+#Handle missing values (Avoiding SettingWithCopyWarning)
+print("\nStep 4: Handling missing values")
+
+# Train dataset
+train_df['Age'] = train_df['Age'].fillna(train_df['Age'].median())  # Fill missing 'Age' with median
+train_df['Embarked'] = train_df['Embarked'].fillna(train_df['Embarked'].mode()[0])  # Fill missing 'Embarked' with mode
+train_df.drop(columns=['Cabin'], inplace=True)  # Drop 'Cabin' due to a high percentage of missing values
+
+# Test dataset
+test_df['Age'] = test_df['Age'].fillna(test_df['Age'].median())  # Fill missing 'Age' with median
+test_df['Fare'] = test_df['Fare'].fillna(test_df['Fare'].median())  # Fill missing 'Fare' with median
+test_df.drop(columns=['Cabin'], inplace=True)  # Drop 'Cabin' due to a high percentage of missing values
+
+
+# In[8]:
+
+
+print("Missing values after handling:")
+print("Train dataset:")
+print(train_df.isnull().sum())
+print("\nTest dataset:")
+print(test_df.isnull().sum())
+
+
+# In[9]:
+
+
+#Convert categorical variables to numeric (One-hot encoding)
+print("\nStep 5: Converting categorical variables to numeric")
+for df_name, df in zip(["Train", "Test"], [train_df, test_df]):
+    df['Sex'] = df['Sex'].map({'male': 0, 'female': 1})  # Convert 'Sex' to numeric (0 = male, 1 = female)
+    encoded_embarked = pd.get_dummies(df['Embarked'], prefix='Embarked', drop_first=True)  # One-hot encode 'Embarked'
+    df.drop(columns=['Embarked'], inplace=True)  # Drop original 'Embarked' column after encoding
+    df[encoded_embarked.columns] = encoded_embarked  # Add encoded columns back to the DataFrame
+    
+    print(f"\n{df_name} dataset after encoding:")
+    print(df.head())
+
+# Debugging print to ensure no leftover non-numeric columns exist before correlation heatmap
+print("\nColumns in Train Dataset after encoding and before correlation heatmap:")
+print(train_df.dtypes)
+
+
+# In[10]:
+
+
+# Histograms for numerical features
+plt.figure(figsize=(12, 5))
+plt.subplot(121)
+sns.histplot(train_df['Age'].dropna(), kde=True)
+plt.title('Distribution of Age')
+plt.subplot(122)
+sns.histplot(train_df['Fare'].dropna(), kde=True)
+plt.title('Distribution of Fare')
+plt.tight_layout()
+plt.show()
+
+
+# In[11]:
+
+
+# Bar plots for categorical features
+plt.figure(figsize=(12, 5))
+plt.subplot(121)
+sns.countplot(x='Sex', hue='Survived', data=train_df)
+plt.title('Survival Count by Sex')
+plt.subplot(122)
+sns.countplot(x='Pclass', hue='Survived', data=train_df)
+plt.title('Survival Count by Passenger Class')
+plt.tight_layout()
+plt.show()
+
+
+# In[12]:
+
+
+#Correlation heatmap before removing unnecessary columns
+columns_to_drop_for_corr = ['Name', 'Ticket']
+train_corr_df = train_df.drop(columns=columns_to_drop_for_corr)
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(train_corr_df.corr(), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title("Correlation Heatmap of Train Dataset")
+plt.show()
+
+
+# In[13]:
+
+
+# Feature Engineering: Create FamilySize
+train_df['FamilySize'] = train_df['SibSp'] + train_df['Parch'] + 1
+test_df['FamilySize'] = test_df['SibSp'] + test_df['Parch'] + 1
+
+
+# In[14]:
+
+
+# Drop weakly correlated features based on heatmap analysis
+features_to_drop = ['Age', 'SibSp', 'Parch']
+train_df.drop(columns=features_to_drop, inplace=True)
+test_df.drop(columns=features_to_drop, inplace=True)
+
+
+# In[15]:
+
+
+# Debugging print to ensure no leftover non-numeric columns exist before modeling
+print("\nColumns in Train Dataset after feature engineering:")
+print(train_df.dtypes)
+
+
+# In[16]:
+
+
+#Prepare data for modeling (Feature Selection)
+selected_features = ['Sex', 'Pclass', 'Fare', 'Embarked_Q', 'Embarked_S', 'FamilySize']
+X_train = train_df[selected_features]
+y_train = train_df['Survived']
+X_test = test_df[selected_features]
+
+
+# In[17]:
+
+
+#Scale numerical features (optional for logistic regression)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+# In[18]:
+
+
+# Train logistic regression model
+model = LogisticRegression(random_state=100)
+model.fit(X_train_scaled, y_train)
+print("Logistic Regression model trained")
+
+
+# In[19]:
+
+
+#Evaluate model performance on the training set (optional step)
+y_train_pred = model.predict(X_train_scaled)
+accuracy = accuracy_score(y_train, y_train_pred)
+precision = precision_score(y_train, y_train_pred)
+recall = recall_score(y_train, y_train_pred)
+f1 = f1_score(y_train, y_train_pred)
+roc_auc = roc_auc_score(y_train, model.predict_proba(X_train_scaled)[:, 1])
+
+
+# In[20]:
+
+
+print("Model evaluation metrics on training set")
+print(f"Accuracy: {accuracy:.4f}")
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1:.4f}")
+print(f"ROC AUC Score: {roc_auc:.4f}")
+
+
+# In[21]:
+
+
+# Confusion matrix visualization (optional)
+conf_matrix = confusion_matrix(y_train, y_train_pred)
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues')
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+
+
+# In[22]:
+
+
+#Make predictions on the test set
+y_test_pred = model.predict(X_test_scaled)
+
+
+# In[23]:
+
+
+#Create a submission file with predictions for test data
+submission = pd.DataFrame({'PassengerId': test_df['PassengerId'], 'Survived': y_test_pred})
+submission.to_csv('titanic_submission.csv', index=False)
+print("\nStep 11: Submission file created as 'titanic_submission.csv'")
+
+
+# ### 🔚 Conclusion
+# - Logistic regression model achieved good performance in predicting survival.
+# - Key features influencing survival include `Sex`, `Pclass`, and `Fare`.
+# - The model can be further improved by trying other algorithms or ensemble methods.
+
+# In[25]:
+
+
+# Import necessary libraries
+import pandas as pd
+import plotly.express as px
+
+
+# In[26]:
+
+
+# Load the submission file
+submission = pd.read_csv('titanic_submission.csv')
+print("\nSubmission File Preview:")
+print(submission.head())
+
+
+# In[27]:
+
+
+# Interactive Bar Chart: Count of Survived (0 vs 1)
+survival_counts = submission['Survived'].value_counts().reset_index()
+survival_counts.columns = ['Survived', 'Count']  # Rename columns for clarity
+
+fig = px.bar(
+    survival_counts,
+    x='Survived',
+    y='Count',
+    labels={'Survived': 'Survival Status', 'Count': 'Number of Passengers'},
+    title='Survival Count (0 = Did Not Survive, 1 = Survived)',
+    text='Count'
+)
+fig.update_traces(texttemplate='%{text}', textposition='outside')
+fig.update_layout(showlegend=False)
+fig.show()
+
+
+# In[28]:
+
+
+# Interactive Scatter Plot: PassengerId vs Survived
+fig2 = px.scatter(
+    submission,
+    x='PassengerId',
+    y='Survived',
+    color='Survived',
+    labels={'PassengerId': 'Passenger ID', 'Survived': 'Survival Status'},
+    title='Passenger Survival Status (Interactive Scatter Plot)',
+)
+fig2.show()
+
+
+# **Interview questions**
+
+# **What is the difference between precision and recall?**
+# 
+# 🎯 Precision measures the accuracy of positive predictions made by a model, while 🔍 recall measures the completeness in identifying all relevant instances.
+# 
+# Precision is calculated as: TP / (TP + FP)
+# Where TP = True Positives, FP = False Positives
+# 
+# Recall is calculated as: TP / (TP + FN)
+# Where TP = True Positives, FN = False Negatives
+# 
+# 🎯 Precision focuses on the proportion of correct positive predictions.
+# 
+# 🔍 Recall indicates the percentage of actual positives that were identified.
+
+# **What is cross-validation, and why is it important in binary classification?**
+# 
+# 🔀 Cross-validation is a statistical technique used to assess how well a machine learning model will generalize to an independent dataset. It involves partitioning the data into subsets, training the model on some subsets, and validating it on others.
+# 
+# Cross-validation is important in binary classification for several reasons:
+# 
+# 📊 It provides a more robust estimate of model performance by using multiple train-test splits.
+# 🛡️ It helps prevent overfitting by ensuring the model performs well on different subsets of data.
+# 🔧 It allows for better tuning of hyperparameters.
+# 📈 It gives a clearer measure of how the model will perform on unseen data.
+# 
+# Common methods include k-fold cross-validation, where the data is split into k subsets, and the model is trained and tested k times.
+
+# In[32]:
+
+
+import pickle
+
+# Save the model
+with open('model.pkl', 'wb') as f:
+    pickle.dump(model, f)
+
+# Save the scaler
+with open('scaler.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
+
+
+# In[ ]:
+
+
+
+
